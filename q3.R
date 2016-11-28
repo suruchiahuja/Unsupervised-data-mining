@@ -1,39 +1,47 @@
 rm(list = ls())
 graphics.off()
 
-library("multtest")
-library("fpc")
-library("cluster")
-library("stats")
+library(igraph)
 
-data <- read.csv("Ch10Ex11.csv", header=F)
-View(data)
-
-#Apply hierarchical clustering to the samples using correlation-based distance
-data1 <- (1-cor(data))
-View(data1)
-
-d <- as.dist(data1)
-hc.average <- hclust(d, method = "ave")
-hc.complete <- hclust(d, method = "complete")
-hc.single <- hclust(d, method = "single")
+# Construct an Igraph
+nodes <- data.frame(names = c("A", "B", "C", "D","E","F"))
+relations <- data.frame(
+from = c("C", "B", "B","D", "D", "E", "F"), 
+ to = c("A", "C", "E","B", "E", "D", "C")
+)
+g <- graph.data.frame(relations, directed = TRUE, vertices = nodes)
 
 x11()
-plot(hc.average)
-x11()
-plot(hc.complete)
-x11()
-plot(hc.single)
+plot(g)
 
-#To know which genes differ the most across the two groups we apply principal component analysis
-pr.fit <- prcomp(t(data))
-summary(pr.fit)
-x11()
-plot(pr.fit)
+pg1 <- page.rank(g, damping = 0.05)
+pg2 <- page.rank(g, damping = 0.25)
+pg3 <- page.rank(g, damping = 0.50)
+pg4 <- page.rank(g, damping = 0.75)
+pg5 <- page.rank(g, damping = 0.95)
 
-total.load <- apply(pr.fit$rotation, 1, sum)
-index <- order(abs(total.load), decreasing = TRUE)
-index[1:10]
+pg1$vector
+pg2$vector
+pg3$vector
+pg4$vector
+pg5$vector
+
+
+#part b
+
+nodes1 <- data.frame(name = c("A", "B", "C", "D","E","F","G","H"))
+relation <- data.frame(
+  from = c("D", "E", "F","G", "H", "B", "C"), 
+  to = c("B", "B", "C","C", "C", "A", "A")
+)
+g1 <- graph.data.frame(relation, directed = TRUE, vertices = nodes1)
+
+x11()
+plot(g1)
+
+pg <- page.rank(g1, damping = 0.15)
+pg$vector
+
 
 
 
